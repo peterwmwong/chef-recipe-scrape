@@ -1,0 +1,20 @@
+{
+  "author": "Peter Wong <peter.wm.wong@gmail.com>",
+  "name": "chef-service",
+  "version": "0.0.0",
+  "repository": {
+    "url": "https://github.com/peterwmwong/chef-service"
+  },
+  "engines": {
+    "node": ">=0.6.8"
+  },
+  "dev-dependencies": {
+    "mocha": "~0.10.2",
+    "should": "~0.5.1"
+  },
+  "dependencies": {
+    "connect": "~1.8.5",
+    "coffee-script": "~1.2.0",
+    "jsdom": "~0.2.10"
+  }
+}
