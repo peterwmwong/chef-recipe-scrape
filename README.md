@@ -9,6 +9,9 @@ chef-service
 - Get details about a recipe
   - ingredients
   - directions
+- Track what's in the fridge
+  - Allow AED
+- Generate recipes based on what's in the fridge
 
 Todos
 -----
