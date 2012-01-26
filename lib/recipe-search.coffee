@@ -1,5 +1,11 @@
-jsdom = require "jsdom"
+jsdom = require 'jsdom'
 jquery = require('fs').readFileSync "#{__dirname}/../vendor/jquery.min.js"
+{parse} = require 'url'
+
+scrape = (url,done_err, done)->
+  jsdom.env html: url, src: [jquery], done: (err,window)->
+    if err then done_err err
+    else done window.$
 
 module.exports =
 
@@ -14,20 +20,33 @@ module.exports =
 
     if not (url = _get_find_by_ingredients_url ingrs)? then done 'Bad ingredients: #{ingrs}'
     else
-      jsdom.env html: url, src: [jquery], done: (err,{$})->
-        if err then done err
+      scrape url, done, ($)->
+        if not (links = $('.rectitlediv > h3 > a'))? or links.length <= 0
+          done undefined, []
         else
-          if not (links = $('.rectitlediv > h3 > a'))? or links.length <= 0
-            done undefined, []
-          else
-            done undefined, do->
-              for l in links then do->
-                $l = $ l
-                name: $l.text()
-                url: $l.attr 'href'
-                rating: do->
-                  if text = $('.starsimg > a > img', $l.closest('.recipes.recipes_compact')).attr('alt')
-                    matches = /(\d(.\d+)?) stars: (\d+) ratings/.exec text
-                    stars: Number(matches[1])
-                    total_votes: Number(matches[3])
+          done undefined, do->
+            for l in links then do->
+              $l = $ l
+              name: $l.text()
+              url: $l.attr 'href'
+              rating: do->
+                if text = $('.starsimg > a > img', $l.closest('.recipes.recipes_compact')).attr('alt')
+                  matches = /(\d(.\d+)?) stars: (\d+) ratings/.exec text
+                  stars: Number(matches[1])
+                  total_votes: Number(matches[3])
 
+  get_recipe_details: (recipe_url,done)->
+    recipe_url 'No recipe url specified' if typeof recipe_url is 'function' and not done?
+    if typeof done isnt 'function' then return
+
+    recipe_url = parse recipe_url
+    if recipe_url.hostname isnt 'allrecipes.com' then done 'Not an allrecipes.com url'
+    else
+      scrape recipe_url.href, done, ($)->
+        if (name = $('#itemTitle').text().trim()) is ''
+          done "Bad allrecipe.com recipe details url"
+        else
+          done undefined,
+            name: name
+            ingredients: ($(li).text().trim() for li in $('.ingredients > ul > li'))
+            directions: ($(li).text().trim() for li in $('.directions > ol > li'))

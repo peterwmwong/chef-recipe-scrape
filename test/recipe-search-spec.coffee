@@ -1,28 +1,9 @@
 should = require 'should'
 rs = require "#{__dirname}/../lib/recipe-search"
-
-jsdom = require 'jsdom'
-jquery = require('fs').readFileSync "#{__dirname}/../vendor/jquery.min.js"
-util = require 'util'
+{allrecipe_busted,scrape_allrecipe,base_url,make_url} = require './test-utils'
 L = console.log.bind console
 
 describe 'recipe-search', ->
-
-  allrecipe_busted = (msg)->
-    should.fail "allrecipes.com is busted or has changed. #{msg or ''}"
-    throw "TEST BUSTED"
-
-  scrape_allrecipe = (ingredients, done)->
-    jsdom.env
-      html: url = make_url ingredients
-      src: [jquery]
-      done: (err,{$})->
-        allrecipe_busted("Expected no errors retrieving url=#{url}") if err
-        done $
-
-  base_url = "http://allrecipes.com/Search/Ingredients.aspx?WithTerm=&SearchIn=All&"
-  make_url = (ingredients)->
-    base_url + ("Wanted#{i+1}=#{ingr}" for ingr,i in ingredients).join '&'
 
   describe '_get_find_by_ingredients_url', ->
 
@@ -49,12 +30,12 @@ describe 'recipe-search', ->
         err.should.equal 'No ingredients specified'
         done()
     
-    it 'when passed ingredients, should return scrape allrecipes.com for recipes', (done)->
+    it 'when passed ingredients, should return recipes scraped allrecipes.com', (done)->
       scrape_allrecipe (ingredients = ['onion','green pepper']), ($)->
         recipe_links = $ '.rectitlediv > h3 > a'
         if not recipe_links? or recipe_links.length <= 0
           allrecipe_busted("Expected atleast one recipe link")
-          
+        
         expected_recipes = do->
           for link in recipe_links then do->
             $link = $(link)
@@ -71,7 +52,7 @@ describe 'recipe-search', ->
           recipe_names.should.eql expected_recipes
           done()
     
-    it 'when passed allrecipes.com gives no results, should return empty array', (done)->
+    it 'when allrecipes.com gives no results, should return empty array', (done)->
 
       scrape_allrecipe (ingredients = ['totallyBoGus','totallyBoGus2']), ($)->
         recipe_links = $ '.rectitlediv > h3 > a'
