@@ -3,6 +3,8 @@ rs = require "#{__dirname}/../lib/recipe-search"
 {allrecipe_busted,scrape_allrecipe_details,base_url,make_url} = require './test-utils'
 L = console.log.bind console
 
+parse_time = (time_string)-> Number /PT(\d+)M/.exec(time_string)[1]
+
 describe 'recipe-search', ->
 
   describe 'get_recipe_details', ->
@@ -36,6 +38,8 @@ describe 'recipe-search', ->
           name: $('#itemTitle').text().trim()
           ingredients: ($(li).text().trim() for li in ingredients)
           directions: ($(li).text().trim() for li in directions)
+          prep_time: parse_time $('.prepTime > span').attr('title')
+          cook_time: parse_time $('.cookTime > span').attr('title')
 
         rs.get_recipe_details url, (err,details)->
           details.should.eql expected_details

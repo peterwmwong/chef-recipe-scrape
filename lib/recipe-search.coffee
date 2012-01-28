@@ -7,6 +7,8 @@ scrape = (url,done_err, done)->
     if err then done_err err
     else done window.$
 
+parse_time = (time_string)-> Number /PT(\d+)M/.exec(time_string)[1]
+
 module.exports =
 
   _get_find_by_ingredients_url: _get_find_by_ingredients_url = (ingrs)->
@@ -50,3 +52,5 @@ module.exports =
             name: name
             ingredients: ($(li).text().trim() for li in $('.ingredients > ul > li'))
             directions: ($(li).text().trim() for li in $('.directions > ol > li'))
+            prep_time: parse_time $('.prepTime > span').attr('title')
+            cook_time: parse_time $('.cookTime > span').attr('title')
